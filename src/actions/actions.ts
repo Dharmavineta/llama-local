@@ -1,15 +1,25 @@
 "use server";
 import { Ollama } from "@langchain/community/llms/ollama";
-import ollama from "ollama";
+import { ollama, streamText } from "modelfusion";
 
 export const getData = async (question: string) => {
   const model = new Ollama({
     model: "llama3",
   });
+  const textStream = await streamText({
+    model: ollama
+      .CompletionTextGenerator({
+        model: "llama3",
+        promptTemplate: ollama.prompt.Mistral,
+        raw: true, // required when using custom prompt template
+        maxGenerationTokens: 500,
+      })
+      .withTextPrompt(),
 
-  const response = await model.invoke(
-    `You're a sentiment analsis AI, you'll analyse this text ${question} and give detailed sentiment analysis. Don't indulge in unnecessary jargon, be very professional. You'll first categorise the input as either negitive or positive and after that give a very brief explanation for why you think it's negtive or positive`
-  );
+    prompt: "Write a short story about a robot learning to love:",
+  });
 
-  return response;
+  for await (const textPart of textStream) {
+    process.stdout.write(textPart);
+  }
 };

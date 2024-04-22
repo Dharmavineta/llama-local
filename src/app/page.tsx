@@ -9,7 +9,6 @@ const Home = () => {
   const handleClick = async () => {
     setLoading(true);
     const res = await getData(question);
-
     setText(res);
     setLoading(false);
   };
